@@ -40,45 +40,4 @@ def find_eni_with_sg(data):
             print(f"Security Group {sg_id} has no associated ENIs.")
             print("------------------------------")
 
-def find_rds_with_sg(data):
-    print(f"\nFinding associated RDS Instances....\n")
-    print('                                     ')
-    for region in data:
-        sg_list = data[region]
-        rds = boto3.client('rds', region_name=region)
-        for sg_id in sg_list:
-            rds_response = rds.describe_db_instances()
-            rds_instances = rds_response['DBInstances']
-            associated = False
-            for rds_instance in rds_instances:
-                vpc_security_groups = rds_instance.get('VpcSecurityGroups', [])
-                for sg in vpc_security_groups:
-                    if sg['VpcSecurityGroupId'] == sg_id:
-                        print(f"Security Group {sg_id} is associated with RDS instance {rds_instance['DBInstanceIdentifier']}")
-                        print("-------------------------------------------")
-                        associated = True
-                        break
-            if not associated:
-                print(f"Security Group {sg_id} is not associated with any RDS instances.")
-                print("------------------------------")
-
-def find_lb_with_sg(data):
-    print(f"\nFinding associated Load Balancers....\n")
-    print('                                     ')
-    for region in data:
-        sg_list = data[region]
-        elbv2 = boto3.client('elbv2', region_name=region)
-        for sg_id in sg_list:
-            response = elbv2.describe_load_balancers()
-            lbs = response['LoadBalancers']
-            associated = False
-            for lb in lbs:
-                lb_security_groups = lb.get('SecurityGroups', [])
-                if sg_id in lb_security_groups:
-                    print(f'Security Group {sg_id} is associated with Load Balancer {lb["LoadBalancerName"]}')
-                    print("------------------------------")
-                    associated = True
-            if not associated:
-                print(f'Security Group {sg_id} is not associated with any Load Balancers')
-                print("------------------------------")
 main()
